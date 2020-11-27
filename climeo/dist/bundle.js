@@ -15,115 +15,145 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var three__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! three */ "./node_modules/three/build/three.module.js");
 /* harmony import */ var three_examples_jsm_controls_OrbitControls_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! three/examples/jsm/controls/OrbitControls.js */ "./node_modules/three/examples/jsm/controls/OrbitControls.js");
 
+ // var scene = new THREE.Scene();
 
-var scene = new three__WEBPACK_IMPORTED_MODULE_0__.Scene();
-var scene = new three__WEBPACK_IMPORTED_MODULE_0__.Scene();
-gsap.config({
-  nullTargetWarn: false
-}); // 4 types of cameras
-// persepective camera takes in 4 args, field of view, apsect ratio, near plane, far plane
+function loadData(url) {
+  var data = [];
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', url, false);
 
-var camera = new three__WEBPACK_IMPORTED_MODULE_0__.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000); // controls the zoom
+  xhr.onreadystatechange = function (e) {
+    if (xhr.readyState === 4) {
+      if (xhr.status === 200) {
+        var response = JSON.parse(xhr.responseText);
+        var output = Object.values(response);
 
-camera.position.z = 5; // set up renderer
-// 3 types, css2d, css3d, webgl, svg renderer
+        for (var i = 0; i < output.length; i++) {
+          data.push(output[i]);
+        }
+      }
+    }
+  };
 
-var renderer = new three__WEBPACK_IMPORTED_MODULE_0__.WebGLRenderer({
-  antialias: true
-});
-renderer.setClearColor('#e5e5e5'); //set size of renderer
+  xhr.send();
+  console.log(data);
+  return data; //  true lets you render the data right away
+}
 
-renderer.setSize(window.innerWidth, window.innerHeight); //next need to append child, dom element
+var data = loadData("temp_anomaly_land.json");
+var years = ['1910', '1920', '1930', '1940', '1980', '1990', '2000', '2010'];
 
-document.body.appendChild(renderer.domElement); // the window is initially non reponsive
+function centuryData(year) {
+  var output = [];
+  var yearIdx = years.indexOf(year);
 
-window.addEventListener('resize', function () {
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-});
-var raycaster = new three__WEBPACK_IMPORTED_MODULE_0__.Raycaster();
-var mouse = new three__WEBPACK_IMPORTED_MODULE_0__.Vector2(); //when creating a shape, have form and material
-//acepts radius, width and height segments
-//higher the width and heigth, the smoother the sphere
-//combine two into a mesh
-
-var geometry = new three__WEBPACK_IMPORTED_MODULE_0__.SphereGeometry(1, 10, 10);
-var material = new three__WEBPACK_IMPORTED_MODULE_0__.MeshLambertMaterial({
-  color: 0x0000FF
-});
-var mesh = new three__WEBPACK_IMPORTED_MODULE_0__.Mesh(geometry, material);
-scene.add(mesh); // don't see it because we need camera position on the z axis
-// see it once we add renderer.render to bottom
-//need to add light to see color
-// takes in color, distance, and decay
-
-var light = new three__WEBPACK_IMPORTED_MODULE_0__.PointLight(0xFFFFFF, 1, 500);
-light.position.set(10, 0, 25);
-scene.add(light); // renderer.render(scene, camera)
-//this helps us avoid distortion
-// creates a loop that causes renderer to draw a new scene through each refresh
-
-var render = function render() {
-  requestAnimationFrame(render); // if we wanted object to move
-  // 0.01 is about 60 frames per second
-  // mesh.rotation.y += 0.01
-
-  renderer.render(scene, camera);
-}; //     // .3 delay so graphics not shaky
-//     var tl = new TimelineMax().delay(.3);
-//     // 1 is duration
-//     // object is where it is scaling
-//     tl.to(mesh.scale, 1, {x: 2, ease: Expo.easeOut}, "=-1.5")
-// // it will occur 1.5 seconds before it normally does
-
-
-function onMouseMove(event) {
-  event.preventDefault();
-  mouse.x = event.clientX / window.innerWidth * 2 - 1;
-  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-  raycaster.setFromCamera(mouse, camera); // returns array based on objects where mouse is at
-
-  var intersects = raycaster.intersectObjects(scene.children, true);
-
-  for (var i = 0; i < intersects.length; i++) {
-    // intersects[i].object.material.color.set(0xff0000)
-    // user events
-    // .3 delay so graphics not shaky
-    this.tl = new TimelineMax(); // 1 is duration
-    // object is where it is scaling
-
-    this.tl.to(intersects[i].object.scale, 1, {
-      x: 2,
-      ease: Expo.easeOut
-    });
-    this.tl.to(intersects[i].object.scale, .5, {
-      x: 2,
-      ease: Expo.easeOut
-    });
-    this.tl.to(intersects[i].object.position, .5, {
-      x: 2,
-      ease: Expo.easeOut
-    });
-    this.tl.to(intersects[i].object.rotation, .5, {
-      y: Math.PI * 5,
-      ease: Expo.easeOut
-    }, "=-1.5"); // it will occur 1.5 seconds before it normally does
+  for (var i = 0; i < data[yearIdx][1].length; i += 3) {
+    var dataObject = {};
+    dataObject["lat"] = data[yearIdx][1][i];
+    dataObject["lon"] = data[yearIdx][1][i + 1];
+    dataObject["delta"] = data[yearIdx][1][i + 2];
+    output.push(dataObject);
   }
-} // // user events
-// // .3 delay so graphics not shaky
-// this.tl = new TimelineMax({ paused: true });
-// // 1 is duration
-// // object is where it is scaling
-// this.tl.to(this.mesh.scale, 1, { x: 2, ease: Expo.easeOut })
-// this.tl.to(this.mesh.scale, .5, { x: 2, ease: Expo.easeOut })
-// this.tl.to(this.mesh.scale, .5, { x: 2, ease: Expo.easeOut })
-// this.tl.to(this.mesh.scale, .5, { y: Math.PI * 5, ease: Expo.easeOut }, "=-1.5")
-// // it will occur 1.5 seconds before it normally does
 
+  console.log(output);
+  return output;
+}
 
-render();
-window.addEventListener('mousemove', onMouseMove); // to have the animation to only take place if the specfic object is clicked then 
+var year = "1910";
+centuryData(year); // gsap.config({
+//     nullTargetWarn: false,
+// });
+// // 4 types of cameras
+// // persepective camera takes in 4 args, field of view, apsect ratio, near plane, far plane
+// var camera = new THREE.PerspectiveCamera(
+//     75,
+//     window.innerWidth / window.innerHeight,
+//     0.1,
+//     1000
+// )
+// // controls the zoom
+// camera.position.z = 5;
+// // set up renderer
+// // 3 types, css2d, css3d, webgl, svg renderer
+// var renderer = new THREE.WebGLRenderer({ antialias: true })
+// renderer.setClearColor('#e5e5e5');
+// //set size of renderer
+// renderer.setSize(window.innerWidth, window.innerHeight);
+// //next need to append child, dom element
+// document.body.appendChild(renderer.domElement)
+// // the window is initially non reponsive
+// window.addEventListener('resize', () => {
+//     renderer.setSize(window.innerWidth, window.innerHeight);
+//     camera.aspect = window.innerWidth / window.innerHeight;
+//     camera.updateProjectionMatrix();
+// })
+// var raycaster = new THREE.Raycaster();
+// var mouse = new THREE.Vector2();
+// //when creating a shape, have form and material
+// //acepts radius, width and height segments
+// //higher the width and heigth, the smoother the sphere
+// //combine two into a mesh
+// var geometry = new THREE.SphereGeometry(1, 10, 10);
+// var material = new THREE.MeshLambertMaterial({ color: 0x0000FF })
+// var mesh = new THREE.Mesh(geometry, material);
+// scene.add(mesh);
+// // don't see it because we need camera position on the z axis
+// // see it once we add renderer.render to bottom
+// //need to add light to see color
+// // takes in color, distance, and decay
+// var light = new THREE.PointLight(0xFFFFFF, 1, 500)
+// light.position.set(10, 0, 25)
+// scene.add(light)
+// // renderer.render(scene, camera)
+// //this helps us avoid distortion
+// // creates a loop that causes renderer to draw a new scene through each refresh
+// var render = function () {
+//     requestAnimationFrame(render);
+//     // if we wanted object to move
+//     // 0.01 is about 60 frames per second
+//     // mesh.rotation.y += 0.01
+//     renderer.render(scene, camera)
+// }
+// //     // .3 delay so graphics not shaky
+// //     var tl = new TimelineMax().delay(.3);
+// //     // 1 is duration
+// //     // object is where it is scaling
+// //     tl.to(mesh.scale, 1, {x: 2, ease: Expo.easeOut}, "=-1.5")
+// // // it will occur 1.5 seconds before it normally does
+// function onMouseMove(event) {
+//     event.preventDefault();
+//     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+//     mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+//     raycaster.setFromCamera(mouse, camera);
+//     // returns array based on objects where mouse is at
+//     var intersects = raycaster.intersectObjects(scene.children, true)
+//     for (let i = 0; i < intersects.length; i++) {
+//         // intersects[i].object.material.color.set(0xff0000)
+//         // user events
+//         // .3 delay so graphics not shaky
+//         this.tl = new TimelineMax();
+//         // 1 is duration
+//         // object is where it is scaling
+//         this.tl.to(intersects[i].object.scale, 1, { x: 2, ease: Expo.easeOut })
+//         this.tl.to(intersects[i].object.scale, .5, { x: 2, ease: Expo.easeOut })
+//         this.tl.to(intersects[i].object.position, .5, { x: 2, ease: Expo.easeOut })
+//         this.tl.to(intersects[i].object.rotation, .5, { y: Math.PI * 5, ease: Expo.easeOut }, "=-1.5")
+//         // it will occur 1.5 seconds before it normally does
+//     }
+// }
+// // // user events
+// // // .3 delay so graphics not shaky
+// // this.tl = new TimelineMax({ paused: true });
+// // // 1 is duration
+// // // object is where it is scaling
+// // this.tl.to(this.mesh.scale, 1, { x: 2, ease: Expo.easeOut })
+// // this.tl.to(this.mesh.scale, .5, { x: 2, ease: Expo.easeOut })
+// // this.tl.to(this.mesh.scale, .5, { x: 2, ease: Expo.easeOut })
+// // this.tl.to(this.mesh.scale, .5, { y: Math.PI * 5, ease: Expo.easeOut }, "=-1.5")
+// // // it will occur 1.5 seconds before it normally does
+// render();
+// window.addEventListener('mousemove', onMouseMove);
+// to have the animation to only take place if the specfic object is clicked then 
 // need to use a raycaster
 // how to move objects in space
 // you move the mesh
