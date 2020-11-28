@@ -14,8 +14,31 @@
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var three__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! three */ "./node_modules/three/build/three.module.js");
 /* harmony import */ var three_examples_jsm_controls_OrbitControls_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! three/examples/jsm/controls/OrbitControls.js */ "./node_modules/three/examples/jsm/controls/OrbitControls.js");
+var _this = undefined;
+
 
  // var scene = new THREE.Scene();
+
+var year;
+var markers;
+document.addEventListener('DOMContentLoaded', function () {
+  var closeModal = document.getElementById("modal");
+  document.getElementById("close-modal").addEventListener("click", function () {
+    closeModal.classList.add("animate-modal");
+    year = "1910";
+    markers = centuryData(year);
+    renderAnomolies();
+    setTimeout(function () {
+      closeModal.style.display = "none";
+      closeModal.style.zIndex = -1;
+    }, 1000);
+  });
+  closeModal.addEventListener("animationend", function () {
+    if (_this.classList.contains("animate-modal")) {
+      _this.classList.remove("animate-modal");
+    }
+  });
+});
 
 function loadData(url) {
   var data = [];
@@ -25,6 +48,7 @@ function loadData(url) {
   xhr.onreadystatechange = function (e) {
     if (xhr.readyState === 4) {
       if (xhr.status === 200) {
+        // debugger
         var response = JSON.parse(xhr.responseText);
         var output = Object.values(response);
 
@@ -57,15 +81,17 @@ function centuryData(year) {
 
   console.log(output);
   return output;
-}
+} // let year = "1910";
+// let markers = centuryData(year);
+// let year;
+// let markers;
 
-var year = "1910";
-centuryData(year);
+
 var scene = new three__WEBPACK_IMPORTED_MODULE_0__.Scene();
 var camera = new three__WEBPACK_IMPORTED_MODULE_0__.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 var renderer = new three__WEBPACK_IMPORTED_MODULE_0__.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
-document.getElementById('globe').appendChild(renderer.domElement);
+document.body.appendChild(renderer.domElement);
 var controls = new three_examples_jsm_controls_OrbitControls_js__WEBPACK_IMPORTED_MODULE_1__.OrbitControls(camera, renderer.domElement);
 var raycaster = new three__WEBPACK_IMPORTED_MODULE_0__.Raycaster();
 var mouse = new three__WEBPACK_IMPORTED_MODULE_0__.Vector2(); // Earthmap is used for the basic texture which has the various continents/countries/etc. on it
@@ -137,11 +163,21 @@ controls.update();
 controls.saveState(); // resize window, make it dynamic, by using an event handler
 
 window.addEventListener("resize", onWindowResize, false);
+document.querySelector('#years-list').addEventListener("click", onYearsClick, false);
 
 function onWindowResize() {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+function onYearsClick(e) {
+  e.preventDefault();
+  e.target.classList.add("selected-year");
+  removeChildren();
+  year = e.target.id;
+  markers = centuryData(year);
+  renderAnomolies();
 }
 
 function animate() {
@@ -152,9 +188,73 @@ function animate() {
 
 function render() {
   renderer.render(scene, camera);
+} // Add a function to remove children, so children aren't added each time
+// Removes the points of interest freeing up memory and space to have better performance
+
+
+function removeChildren() {
+  var destroy = earthClouds.children.length - 1;
+
+  while (destroy >= 0) {
+    earthClouds.remove(earthClouds.children[destroy].material);
+    earthClouds.remove(earthClouds.children[destroy].geometry); // destroy on its own only removes the mesh
+
+    earthClouds.remove(earthClouds.children[destroy]);
+    destroy -= 1;
+  }
+} // hue calculation code borrowed from https://github.com/dataarts/webgl-globe
+
+
+function colorVal(x) {
+  var c = new three__WEBPACK_IMPORTED_MODULE_0__.Color();
+
+  if (x > 0.0) {
+    c.setHSL(.2139 - x / 1.619 * .5, 1.0, 0.5);
+    return c;
+  } else if (x < 0.0) {
+    c.setHSL(0.5111 - x / 1.619, 1.0, 0.6);
+    return c;
+  } else if (x == 0) {
+    c.setRGB(1.0, 1.0, 1.0);
+    return c;
+  }
 }
 
-animate();
+; // Code to map coordinates onto 3d plane borrowed from https://stackoverflow.com/questions/36369734/how-to-map-latitude-and-longitude-to-a-3d-sphere
+
+function addCoord(latitude, longitude, delta) {
+  var pointOfInterest = new three__WEBPACK_IMPORTED_MODULE_0__.BoxGeometry(.05, .1, .05);
+  var lat = latitude * (Math.PI / 180);
+  var lon = -longitude * (Math.PI / 180);
+  var radius = 10; // const phi = (90 - lat) * (Math.PI / 180);
+  // const theta = (lon * 180) * (Math.PI / 180);
+
+  var color = colorVal(delta);
+  var material = new three__WEBPACK_IMPORTED_MODULE_0__.MeshLambertMaterial({
+    color: color
+  });
+  var mesh = new three__WEBPACK_IMPORTED_MODULE_0__.Mesh(pointOfInterest, material);
+  mesh.position.set(Math.cos(lat) * Math.cos(lon) * radius, Math.sin(lat) * radius, Math.cos(lat) * Math.sin(lon) * radius); // mesh.lookAt(mesh.position)
+
+  mesh.rotation.set(0.0, -lon, lat - Math.PI * 0.5);
+  mesh.scale.y = Math.max(Math.abs(delta) * 150, 0.1); // avoid non-invertible matrix
+
+  earthClouds.add(mesh);
+}
+
+function renderAnomolies() {
+  for (var i = 0; i < markers.length; i++) {
+    if (markers[i].delta !== 0) {
+      addCoord(markers[i].lat, markers[i].lon, markers[i].delta);
+    }
+  }
+}
+
+animate(); // if (!year){
+//     year = "1910";
+//     markers = centuryData(year);
+//     renderAnomolies();
+// }
 
 /***/ }),
 

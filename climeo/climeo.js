@@ -2,6 +2,28 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 // var scene = new THREE.Scene();
 
+let year;
+let markers;
+document.addEventListener('DOMContentLoaded', ()=>{
+    const closeModal = document.getElementById("modal");
+    document.getElementById("close-modal").addEventListener("click",()=>{
+        closeModal.classList.add("animate-modal");
+        year = "1910";
+        markers = centuryData(year);
+        renderAnomolies();
+        setTimeout(()=>{
+            closeModal.style.display = "none";
+            closeModal.style.zIndex = -1;
+        },1000)
+    })
+    closeModal.addEventListener("animationend",()=>{
+        if(this.classList.contains("animate-modal")){
+            this.classList.remove("animate-modal");
+        }
+    })
+})
+
+
 function loadData(url) {
     let data = [];
     let xhr = new XMLHttpRequest();
@@ -9,6 +31,7 @@ function loadData(url) {
     xhr.onreadystatechange = function (e) {
         if (xhr.readyState === 4) {
             if (xhr.status === 200) {
+                // debugger
                 let response = JSON.parse(xhr.responseText);
                 let output = Object.values(response);
                 for (let i = 0; i < output.length; i++) {
@@ -26,12 +49,11 @@ function loadData(url) {
 let data = loadData("temp_anomaly_land.json")
 const years = ['1910', '1920', '1930', '1940', '1980', '1990', '2000', '2010'];
 
-
 function centuryData(year) {
     let output = []
     let yearIdx = years.indexOf(year)
     for(let i=0; i<data[yearIdx][1].length;i+=3){
-        let dataObject = {}
+        let dataObject = {};
         dataObject["lat"] = data[yearIdx][1][i];
         dataObject["lon"] = data[yearIdx][1][i+1];
         dataObject["delta"] = data[yearIdx][1][i + 2];
@@ -41,8 +63,10 @@ function centuryData(year) {
     return (output)
 }
 
-let year = "1910";
-centuryData(year);
+// let year = "1910";
+// let markers = centuryData(year);
+// let year;
+// let markers;
 
 const scene = new THREE.Scene();
 
@@ -50,7 +74,7 @@ const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerH
 
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
-document.getElementById('globe').appendChild(renderer.domElement);
+document.body.appendChild(renderer.domElement);
 
 const controls = new OrbitControls(camera, renderer.domElement)
 
@@ -151,11 +175,21 @@ controls.saveState();
 
 // resize window, make it dynamic, by using an event handler
 window.addEventListener("resize", onWindowResize, false)
+document.querySelector('#years-list').addEventListener("click", onYearsClick, false)
 
 function onWindowResize() {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+function onYearsClick(e){
+    e.preventDefault();
+    e.target.classList.add("selected-year")
+    removeChildren();
+    year = e.target.id;
+    markers = centuryData(year);
+    renderAnomolies();
 }
 
 function animate() {
@@ -168,4 +202,78 @@ function render() {
     renderer.render(scene, camera);
 }
 
+// Add a function to remove children, so children aren't added each time
+// Removes the points of interest freeing up memory and space to have better performance
+function removeChildren() {
+    let destroy = earthClouds.children.length - 1;
+    while (destroy >= 0) {
+        earthClouds.remove(earthClouds.children[destroy].material)
+        earthClouds.remove(earthClouds.children[destroy].geometry)
+        // destroy on its own only removes the mesh
+        earthClouds.remove(earthClouds.children[destroy])
+        destroy -= 1
+    }
+}
+
+// hue calculation code borrowed from https://github.com/dataarts/webgl-globe
+function colorVal(x) {
+    var c = new THREE.Color();
+    if (x > 0.0) {
+        c.setHSL((.2139 - (x / 1.619) * .5), 1.0, 0.5)
+        return c;
+    }
+    else if (x < 0.0) {
+        c.setHSL((0.5111 - (x / 1.619)), 1.0, 0.6)
+        return c;
+    }
+    else if (x == 0) {
+        c.setRGB(1.0, 1.0, 1.0)
+        return c;
+    }
+};
+
+
+// Code to map coordinates onto 3d plane borrowed from https://stackoverflow.com/questions/36369734/how-to-map-latitude-and-longitude-to-a-3d-sphere
+function addCoord(latitude, longitude, delta){
+    let pointOfInterest = new THREE.BoxGeometry(.05, .1, .05)
+    let lat = latitude * (Math.PI / 180);
+    let lon = -longitude * (Math.PI / 180);
+    const radius = 10;
+    // const phi = (90 - lat) * (Math.PI / 180);
+    // const theta = (lon * 180) * (Math.PI / 180);
+
+    let color = colorVal(delta);
+
+    let material = new THREE.MeshLambertMaterial({ color: color});
+
+    let mesh = new THREE.Mesh(pointOfInterest,material);
+
+    mesh.position.set(
+        Math.cos(lat) * Math.cos(lon) * radius,
+        Math.sin(lat) * radius,
+        Math.cos(lat) * Math.sin(lon) * radius
+    );
+
+    // mesh.lookAt(mesh.position)
+
+    mesh.rotation.set(0.0, -lon, lat - Math.PI * 0.5);
+    
+    mesh.scale.y = Math.max(Math.abs(delta)*150, 0.1); // avoid non-invertible matrix
+
+    earthClouds.add(mesh)
+}
+
+
+function renderAnomolies() {
+    for(let i=0; i<markers.length;i++){
+        if (markers[i].delta !== 0) {
+            addCoord(markers[i].lat, markers[i].lon, markers[i].delta)
+        }
+    }
+}
 animate();
+// if (!year){
+//     year = "1910";
+//     markers = centuryData(year);
+//     renderAnomolies();
+// }
