@@ -191,12 +191,12 @@
 
 #explanation {
   position: absolute;
-  bottom: 10px;
+  bottom: 2vh;
   right: 3vw;
 }
 
 #explanation span, #explanation a{
-  font-size: 11px;
+  font-size: 12px;
   color: #AAAAAA;
   font-style: oblique;
 }
