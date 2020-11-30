@@ -135,8 +135,8 @@
   text-decoration: underline;
   transform: translate(4px, 4px); 
   box-shadow: 5px 5px 10px 0 rgb(0 0 0 / 40%);
-  color: black;
-  border-color: black;
+  color: #AAAAAA;
+  border-color: #AAAAAA;
 }
 
 @keyframes show{
@@ -188,6 +188,29 @@
     font-size: 13px;
     text-decoration: underline;
 }
+
+#explanation {
+  position: absolute;
+  bottom: 10px;
+  right: 3vw;
+}
+
+#explanation span, #explanation a{
+  font-size: 11px;
+  color: #AAAAAA;
+  font-style: oblique;
+}
+
+#explanation svg{
+  padding-left: 5px;
+}
+
+.bullet{
+  padding: 0 5px;
+}
+ #explanation a:hover{
+   cursor: pointer;
+ }
 
 
 

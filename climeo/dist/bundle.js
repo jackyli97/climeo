@@ -96,7 +96,7 @@ var controls = new three_examples_jsm_controls_OrbitControls_js__WEBPACK_IMPORTE
 var raycaster = new three__WEBPACK_IMPORTED_MODULE_0__.Raycaster();
 var mouse = new three__WEBPACK_IMPORTED_MODULE_0__.Vector2(); // Earthmap is used for the basic texture which has the various continents/countries/etc. on it
 
-var earthMap = new three__WEBPACK_IMPORTED_MODULE_0__.TextureLoader().load('./assets/images/earthmap4k.jpg'); // EarthBumpMap is used to give the texture some "depth" so it is more appealing on eyes and data visuals
+var earthMap = new three__WEBPACK_IMPORTED_MODULE_0__.TextureLoader().load('./assets/images/BM.jpeg'); // EarthBumpMap is used to give the texture some "depth" so it is more appealing on eyes and data visuals
 
 var earthBumpMap = new three__WEBPACK_IMPORTED_MODULE_0__.TextureLoader().load('./assets/images/earthbump4k.jpg'); // EarthSpecMap gives the earth some shininess to the environment, allowing reflectivity off of the lights
 
@@ -107,7 +107,7 @@ var earthMaterial = new three__WEBPACK_IMPORTED_MODULE_0__.MeshPhongMaterial({
   bumpMap: earthBumpMap,
   bumpScale: 0.10,
   specularMap: earthSpecMap,
-  specular: new three__WEBPACK_IMPORTED_MODULE_0__.Color('grey')
+  specular: new three__WEBPACK_IMPORTED_MODULE_0__.Color('white')
 });
 var earth = new three__WEBPACK_IMPORTED_MODULE_0__.Mesh(earthGeometry, earthMaterial);
 scene.add(earth); // Add clouds to the earth object
@@ -117,14 +117,34 @@ var earthCloudGeo = new three__WEBPACK_IMPORTED_MODULE_0__.SphereGeometry(10, 32
 var earthCloudsTexture = new three__WEBPACK_IMPORTED_MODULE_0__.TextureLoader().load('./assets/images/earthhiresclouds4K.jpg'); // Add cloud material
 
 var earthMaterialClouds = new three__WEBPACK_IMPORTED_MODULE_0__.MeshLambertMaterial({
-  color: 0xffffff,
+  color: 0x1f2340,
   map: earthCloudsTexture,
   transparent: true,
-  opacity: 0.4
+  opacity: 0.2
 });
 var earthClouds = new three__WEBPACK_IMPORTED_MODULE_0__.Mesh(earthCloudGeo, earthMaterialClouds);
 earthClouds.scale.set(1.015, 1.015, 1.015);
-earth.add(earthClouds);
+earth.add(earthClouds); // shader creates halo effect
+// shader values borrowed from https://github.com/dataarts/webgl-globe
+
+var shader = {
+  uniforms: {},
+  vertexShader: ['varying vec3 vNormal;', 'void main() {', 'vNormal = normalize( normalMatrix * normal );', 'gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );', '}'].join('\n'),
+  fragmentShader: ['varying vec3 vNormal;', 'void main() {', 'float intensity = pow( 0.8 - dot( vNormal, vec3( 0, 0, 1.0 ) ), 12.0 );', 'gl_FragColor = vec4( 1.0, 1.0, 1.0, 1.0 ) * intensity;', '}'].join('\n')
+};
+var uniforms = three__WEBPACK_IMPORTED_MODULE_0__.UniformsUtils.clone(shader.uniforms);
+var geometry = new three__WEBPACK_IMPORTED_MODULE_0__.SphereGeometry(10, 32, 32);
+var material = new three__WEBPACK_IMPORTED_MODULE_0__.ShaderMaterial({
+  uniforms: uniforms,
+  vertexShader: shader.vertexShader,
+  fragmentShader: shader.fragmentShader,
+  side: three__WEBPACK_IMPORTED_MODULE_0__.BackSide,
+  blending: three__WEBPACK_IMPORTED_MODULE_0__.AdditiveBlending,
+  transparent: true
+});
+var halo = new three__WEBPACK_IMPORTED_MODULE_0__.Mesh(geometry, material);
+halo.scale.set(1.35, 1.35, 1.35);
+earthClouds.add(halo);
 
 function createSkyBox(scene) {
   var loader = new three__WEBPACK_IMPORTED_MODULE_0__.CubeTextureLoader();
@@ -135,9 +155,9 @@ function createSkyBox(scene) {
 var lights = [];
 
 function createLights(scene) {
-  lights[0] = new three__WEBPACK_IMPORTED_MODULE_0__.PointLight("#004d99", .5, 0);
-  lights[1] = new three__WEBPACK_IMPORTED_MODULE_0__.PointLight("#004d99", .5, 0);
-  lights[2] = new three__WEBPACK_IMPORTED_MODULE_0__.PointLight("#004d99", .7, 0);
+  lights[0] = new three__WEBPACK_IMPORTED_MODULE_0__.PointLight("#1a447e", 0.7, 0);
+  lights[1] = new three__WEBPACK_IMPORTED_MODULE_0__.PointLight("#1a447e", 0.7, 0);
+  lights[2] = new three__WEBPACK_IMPORTED_MODULE_0__.PointLight("#1a447e", 0.9, 0);
   lights[3] = new three__WEBPACK_IMPORTED_MODULE_0__.AmbientLight("#ffffff");
   lights[0].position.set(200, 0, -400);
   lights[1].position.set(200, 200, 400);
@@ -157,7 +177,7 @@ addSceneObjects(scene);
 camera.position.z = 20; // Disable control function, so users do not zoom too far in or pan too far away from center
 
 controls.minDistance = 12;
-controls.maxDistance = 30;
+controls.maxDistance = 20;
 controls.enablePan = false;
 controls.update();
 controls.saveState(); // resize window, make it dynamic, by using an event handler

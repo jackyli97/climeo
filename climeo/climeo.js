@@ -83,7 +83,7 @@ const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 
 // Earthmap is used for the basic texture which has the various continents/countries/etc. on it
-let earthMap = new THREE.TextureLoader().load('./assets/images/earthmap4k.jpg');
+let earthMap = new THREE.TextureLoader().load('./assets/images/BM.jpeg');
 
 // EarthBumpMap is used to give the texture some "depth" so it is more appealing on eyes and data visuals
 let earthBumpMap = new THREE.TextureLoader().load('./assets/images/earthbump4k.jpg');
@@ -98,7 +98,7 @@ let earthMaterial = new THREE.MeshPhongMaterial({
     bumpMap: earthBumpMap,
     bumpScale: 0.10,
     specularMap: earthSpecMap,
-    specular: new THREE.Color('grey')
+    specular: new THREE.Color('white')
 });
 
 let earth = new THREE.Mesh(earthGeometry, earthMaterial)
@@ -113,17 +113,55 @@ let earthCloudsTexture = new THREE.TextureLoader().load('./assets/images/earthhi
 
 // Add cloud material
 let earthMaterialClouds = new THREE.MeshLambertMaterial({
-    color: 0xffffff,
+    color: 0x1f2340,
     map: earthCloudsTexture,
     transparent: true,
-    opacity: 0.4
+    opacity: 0.2
 });
 
 let earthClouds = new THREE.Mesh(earthCloudGeo, earthMaterialClouds);
 
 earthClouds.scale.set(1.015,1.015,1.015);
 
-earth.add( earthClouds )
+earth.add( earthClouds );
+
+// shader creates halo effect
+// shader values borrowed from https://github.com/dataarts/webgl-globe
+let shader = {
+    uniforms: {},
+    vertexShader: [
+        'varying vec3 vNormal;',
+        'void main() {',
+        'vNormal = normalize( normalMatrix * normal );',
+        'gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );',
+        '}'
+    ].join('\n'),
+    fragmentShader: [
+        'varying vec3 vNormal;',
+        'void main() {',
+        'float intensity = pow( 0.8 - dot( vNormal, vec3( 0, 0, 1.0 ) ), 12.0 );',
+        'gl_FragColor = vec4( 1.0, 1.0, 1.0, 1.0 ) * intensity;',
+        '}'
+    ].join('\n')
+};
+let uniforms = THREE.UniformsUtils.clone(shader.uniforms);
+
+let geometry = new THREE.SphereGeometry(10, 32, 32);
+
+let material = new THREE.ShaderMaterial({
+
+    uniforms: uniforms,
+    vertexShader: shader.vertexShader,
+    fragmentShader: shader.fragmentShader,
+    side: THREE.BackSide,
+    blending: THREE.AdditiveBlending,
+    transparent: true
+
+});
+
+let halo = new THREE.Mesh(geometry, material);
+halo.scale.set(1.35, 1.35, 1.35);
+earthClouds.add(halo);
 
 function createSkyBox(scene) {
     const loader = new THREE.CubeTextureLoader();
@@ -142,9 +180,9 @@ let lights = [];
 
 function createLights(scene) {
    
-    lights[0] = new THREE.PointLight("#004d99", .5, 0);
-    lights[1] = new THREE.PointLight("#004d99", .5, 0);
-    lights[2] = new THREE.PointLight("#004d99", .7, 0);
+    lights[0] = new THREE.PointLight("#1a447e", 0.7, 0);
+    lights[1] = new THREE.PointLight("#1a447e", 0.7, 0);
+    lights[2] = new THREE.PointLight("#1a447e", 0.9, 0);
     lights[3] = new THREE.AmbientLight("#ffffff");
 
     lights[0].position.set(200, 0, -400)
@@ -168,7 +206,7 @@ camera.position.z = 20;
 
 // Disable control function, so users do not zoom too far in or pan too far away from center
 controls.minDistance = 12;
-controls.maxDistance = 30;
+controls.maxDistance = 20;
 controls.enablePan = false;
 controls.update();
 controls.saveState();
