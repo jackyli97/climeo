@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="stylesheets/main.css" media="screen" />
+    <link rel="icon" type="image/png" href="./assets//images/CLIMEO.png">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+    <script src="https://use.fontawesome.com/releases/v5.15.1/js/all.js" data-auto-a11y="true"></script>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.5.1/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/102/three.js"></script>
+    <title>Climeo: A Climate Change Visualizer</title>
+</head>
+<body>
+    <div id="modal">
+        <div id="modal-background">
+            <div id="about-modal">
+                <div id="logo"><img src="./assets/images/CLIMEO_WHITE.png" alt="climeo"></div>
+                <!-- <h1>Welcome to Climeo</h1> -->
+                <div id="modal-content">
+                    <p><span id="intro">Intro: </span>This globe shows the average temperature anomalies over land between the years of 1910 and 2019 in decades. Temperature
+                    anomalies are defined by the difference in temperature(Δ℃) at that location between at a given period in time and the
+                    average temperature(℃) between the years of 1951 and 1980 (chosen by NASA).</p>
+                    <p><span id="directions">Directions: </span>Travel to a specific period on Earth by clicking on a decade from the list in the middle left; observe how the differences in the temperature spikes.</p>
+                    <p><span id="controls">Controls: </span>Drag the mouse to rotate the scene | Drag the slider to scale</p>
+                </div>
+
+                <div id="modal-footer">
+                    <button id="close-modal">
+                         Close
+                    </button> 
+                    <div class="modal-icons">
+                        <p>Built by Jacky Li</p>
+                        <div>
+                            <a href="https://github.com/jackyli97" target="_blank"><i class="fab fa-github"></i></a>
+                            <a href="https://www.linkedin.com/in/xlihuang/" target="_blank"><i class="fab fa-linkedin-in"></i></a>
+                            <a href="https://angel.co/u/jacky-li-huang" target="_blank"><i class="fab fa-angellist"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <h1 id="page-header">A Century of Surface Temperature Anomalies</h1>
+    <div id="years-box">
+        <ul id="years-list">
+            <li id="1910">1910s</li>
+            <li id="1920">1920s</li>
+            <li id="1930">1930s</li>
+            <li id="1940">1940s</li>
+            <li id="1980">1980s</li>
+            <li id="1990">1990s</li>
+            <li id="2000">2000s</li>
+            <li id="2010">2010s</li>
+        </ul>
+    </div>
+    <div id="instructions-one-box">
+        The color and height of the spikes are jointly scaled to show how much average temperature(℃) has changed from the
+        1951-1980 average. Blues and purples(-4.1℃-0℃), shows temperatures cooler than the average while reds, yellows and oranges show
+        temperatures warmer than the average(0℃-4.1℃).
+    </div>
+    <script src="./dist/bundle.js"></script>
+</body>
+<footer>
+        <div id="explanation">
+            <span>
+                <a href="https://github.com/jackyli97" target="_blank"><i class="fab fa-github"></i></a>
+                <a href="https://www.linkedin.com/in/xlihuang/" target="_blank"><i class="fab fa-linkedin-in"></i></a>
+                <a href="https://angel.co/u/jacky-li-huang" target="_blank"><i class="fab fa-angellist"></i></a>
+            </span>
+            <span class="bullet">•</span>
+            <span>Created by Jacky Li</span>
+            <span class="bullet">•</span>
+            <span>
+                Data acquired from from
+                <a href="https://data.giss.nasa.gov/gistemp/" target="_blank">NASA-GISTEMPv4</a>
+            </span>
+        </div>
+</footer>
+</html>
