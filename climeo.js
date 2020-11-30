@@ -43,10 +43,9 @@ function loadData(url) {
     xhr.send()
     console.log(data)
     return (data)
-    //  true lets you render the data right away
 }
-
-let data = loadData("temp_anomaly_land.json")
+    
+    let data = loadData("temp_anomaly_land.json")
 const years = ['1910', '1920', '1930', '1940', '1980', '1990', '2000', '2010'];
 
 function centuryData(year) {
