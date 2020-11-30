@@ -58,14 +58,8 @@ function centuryData(year) {
         dataObject["delta"] = data[yearIdx][1][i + 2];
         output.push(dataObject);
     }
-    console.log(output)
     return (output)
 }
-
-// let year = "1910";
-// let markers = centuryData(year);
-// let year;
-// let markers;
 
 const scene = new THREE.Scene();
 
