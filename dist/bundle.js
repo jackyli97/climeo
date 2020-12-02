@@ -48,7 +48,6 @@ function loadData(url) {
   xhr.onreadystatechange = function (e) {
     if (xhr.readyState === 4) {
       if (xhr.status === 200) {
-        // debugger
         var response = JSON.parse(xhr.responseText);
         var output = Object.values(response);
 
@@ -61,7 +60,7 @@ function loadData(url) {
 
   xhr.send();
   console.log(data);
-  return data; //  true lets you render the data right away
+  return data;
 }
 
 var data = loadData("temp_anomaly_land.json");
@@ -79,13 +78,8 @@ function centuryData(year) {
     output.push(dataObject);
   }
 
-  console.log(output);
   return output;
-} // let year = "1910";
-// let markers = centuryData(year);
-// let year;
-// let markers;
-
+}
 
 var scene = new three__WEBPACK_IMPORTED_MODULE_0__.Scene();
 var camera = new three__WEBPACK_IMPORTED_MODULE_0__.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -144,7 +138,7 @@ var material = new three__WEBPACK_IMPORTED_MODULE_0__.ShaderMaterial({
 });
 var halo = new three__WEBPACK_IMPORTED_MODULE_0__.Mesh(geometry, material);
 halo.scale.set(1.35, 1.35, 1.35);
-earthClouds.add(halo);
+earth.add(halo);
 
 function createSkyBox(scene) {
   var loader = new three__WEBPACK_IMPORTED_MODULE_0__.CubeTextureLoader();
@@ -184,6 +178,7 @@ controls.saveState(); // resize window, make it dynamic, by using an event handl
 
 window.addEventListener("resize", onWindowResize, false);
 document.querySelector('#years-list').addEventListener("click", onYearsClick, false);
+document.querySelector('#play-button').addEventListener("click", onPlayClick, false);
 
 function onWindowResize() {
   camera.aspect = window.innerWidth / window.innerHeight;
@@ -193,11 +188,30 @@ function onWindowResize() {
 
 function onYearsClick(e) {
   e.preventDefault();
-  e.target.classList.add("selected-year");
+  document.querySelectorAll("#checked").forEach(function (year) {
+    year.style.visibility = "hidden";
+  });
+  e.target.children[0].style.visibility = "visible";
   removeChildren();
   year = e.target.id;
   markers = centuryData(year);
   renderAnomolies();
+}
+
+function onPlayClick(e) {
+  e.preventDefault();
+  removeChildren();
+  years.forEach(function (year) {
+    if (year === "1910") {
+      markers = centuryData(year);
+      renderAnomolies();
+    }
+
+    setTimeout(function () {
+      markers = centuryData(year);
+      renderAnomolies();
+    }, 1500);
+  });
 }
 
 function animate() {

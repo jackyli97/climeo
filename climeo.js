@@ -31,7 +31,6 @@ function loadData(url) {
     xhr.onreadystatechange = function (e) {
         if (xhr.readyState === 4) {
             if (xhr.status === 200) {
-                // debugger
                 let response = JSON.parse(xhr.responseText);
                 let output = Object.values(response);
                 for (let i = 0; i < output.length; i++) {
@@ -45,7 +44,7 @@ function loadData(url) {
     return (data)
 }
     
-    let data = loadData("temp_anomaly_land.json")
+let data = loadData("temp_anomaly_land.json")
 const years = ['1910', '1920', '1930', '1940', '1980', '1990', '2000', '2010'];
 
 function centuryData(year) {
@@ -154,7 +153,7 @@ let material = new THREE.ShaderMaterial({
 
 let halo = new THREE.Mesh(geometry, material);
 halo.scale.set(1.35, 1.35, 1.35);
-earthClouds.add(halo);
+earth.add(halo);
 
 function createSkyBox(scene) {
     const loader = new THREE.CubeTextureLoader();
@@ -207,6 +206,8 @@ controls.saveState();
 // resize window, make it dynamic, by using an event handler
 window.addEventListener("resize", onWindowResize, false)
 document.querySelector('#years-list').addEventListener("click", onYearsClick, false)
+document.querySelector('#play-button').addEventListener("click", onPlayClick, false)
+
 
 function onWindowResize() {
     camera.aspect = window.innerWidth / window.innerHeight;
@@ -216,11 +217,29 @@ function onWindowResize() {
 
 function onYearsClick(e){
     e.preventDefault();
-    e.target.classList.add("selected-year")
+    document.querySelectorAll("#checked").forEach(year=>{
+        year.style.visibility = "hidden";
+    });
+    e.target.children[0].style.visibility = "visible";
     removeChildren();
     year = e.target.id;
     markers = centuryData(year);
     renderAnomolies();
+}
+
+function onPlayClick(e){
+    e.preventDefault();
+    removeChildren();
+    years.forEach(year=>{
+        if (year==="1910"){
+            markers = centuryData(year);
+            renderAnomolies();
+        }
+        setTimeout(()=>{
+            markers = centuryData(year);
+            renderAnomolies();
+        },1500)
+    })
 }
 
 function animate() {

@@ -32,7 +32,6 @@ The data acquired from NASA was downloaded initially as a NetCDF file and subseq
     xhr.onreadystatechange = function (e) {
         if (xhr.readyState === 4) {
             if (xhr.status === 200) {
-                // debugger
                 let response = JSON.parse(xhr.responseText);
                 let output = Object.values(response);
                 for (let i = 0; i < output.length; i++) {

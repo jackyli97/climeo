@@ -148,7 +148,7 @@
     }
 }
 
-#page-header, #years-box, #instructions-one-box, #explanation{
+#page-header, #years-box, #instructions-one-box, #explanation, #play-button{
     position: absolute;
     display: flex;
 }
@@ -171,6 +171,19 @@
     width: 30vw;
 }
 
+#play-button{
+  top: 21vh;
+  left: 4vw;
+}
+
+#play-button svg{
+  font-size: x-large;
+}
+
+#play-button:hover{
+  cursor: pointer;
+}
+
 #years-list li{
     padding-top: 50%;
     list-style: none;
@@ -181,12 +194,19 @@
 #years-list li:hover{
     cursor: pointer;
     font-size: 13px;
-    text-decoration: underline;
+    color: #AAAAAA;
+    /* text-decoration: underline; */
 }
 
-.selected-year {
+/* .selected-year {
     font-size: 13px;
     text-decoration: underline;
+} */
+
+#years-list svg{
+  color: white;
+  padding-right: 3px;
+  visibility: hidden;
 }
 
 #explanation {
