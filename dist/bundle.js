@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', function () {
     year = "1910";
     markers = centuryData(year);
     renderAnomolies();
+    document.querySelectorAll("#checked")[years.indexOf(year)].style.visibility = "visible";
     setTimeout(function () {
       closeModal.style.display = "none";
       closeModal.style.zIndex = -1;
@@ -203,14 +204,22 @@ function onPlayClick(e) {
   removeChildren();
   years.forEach(function (year) {
     if (year === "1910") {
+      document.querySelectorAll("#checked").forEach(function (year) {
+        year.style.visibility = "hidden";
+      });
+      document.querySelectorAll("#checked")[years.indexOf(year)].style.visibility = "visible";
       markers = centuryData(year);
       renderAnomolies();
     }
 
     setTimeout(function () {
+      document.querySelectorAll("#checked").forEach(function (year) {
+        year.style.visibility = "hidden";
+      });
+      document.querySelectorAll("#checked")[years.indexOf(year)].style.visibility = "visible";
       markers = centuryData(year);
       renderAnomolies();
-    }, 1500);
+    }, 1000);
   });
 }
 

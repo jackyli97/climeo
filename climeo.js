@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
         year = "1910";
         markers = centuryData(year);
         renderAnomolies();
+        document.querySelectorAll("#checked")[years.indexOf(year)].style.visibility = "visible";
         setTimeout(()=>{
             closeModal.style.display = "none";
             closeModal.style.zIndex = -1;
@@ -232,13 +233,21 @@ function onPlayClick(e){
     removeChildren();
     years.forEach(year=>{
         if (year==="1910"){
+            document.querySelectorAll("#checked").forEach(year => {
+                year.style.visibility = "hidden";
+            });
+            document.querySelectorAll("#checked")[years.indexOf(year)].style.visibility = "visible";
             markers = centuryData(year);
             renderAnomolies();
         }
         setTimeout(()=>{
+            document.querySelectorAll("#checked").forEach(year => {
+                year.style.visibility = "hidden";
+            });
+            document.querySelectorAll("#checked")[years.indexOf(year)].style.visibility = "visible";
             markers = centuryData(year);
             renderAnomolies();
-        },1500)
+        },1000)
     })
 }
 
