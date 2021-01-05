@@ -1,7 +1,7 @@
 $(function(){
-    let color = $('#fontColor').data-jscolor();
+    let color = $('#fontColor').val();
     $('#fontColor').on("change paste keyup", function(){
-        color = $(this).data-jscolor();
+        color = $(this).val();
     });
 
     $('#btnChange').click(function(){
